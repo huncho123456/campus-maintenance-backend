@@ -1,0 +1,22 @@
+@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20iLCJpYXQiOjE3NzU3NDg3ODYsImV4cCI6MTc3ODM0MDc4Nn0.2v2KlCA-XZQXJK7E4nMdYWmnL491RWPNyUgNpqMhKUfCXrFn0feHDRbzoIrH-dXyemy0JoFz-1ZkFyP3M-hatQ
+
+
+### User Account Management
+GET http://localhost:8080/api/users/account
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### UPDATE User Account
+PUT http://localhost:8080/api/users/update
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "micheal",
+  "lastName": "okafor",
+  "email": "micheal.okafor@vdtcomms.com",
+  "phoneNumber": "9074830750",
+  "password": "password",
+  "sex": "MALE",
+  "role": "STUDENT"
+}

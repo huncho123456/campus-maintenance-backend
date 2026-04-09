@@ -1,0 +1,27 @@
+@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20iLCJpYXQiOjE3NzU3NDg3ODYsImV4cCI6MTc3ODM0MDc4Nn0.2v2KlCA-XZQXJK7E4nMdYWmnL491RWPNyUgNpqMhKUfCXrFn0feHDRbzoIrH-dXyemy0JoFz-1ZkFyP3M-hatQ
+
+### 🔐 Login User (Get Token)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@gmail.com",
+  "password": "password"
+}
+
+
+###
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Admin",
+  "lastName": "User",
+  "email": "admin@gmail.com",
+  "password": "password",
+  "phoneNumber": "08099988877",
+  "role": "ADMIN",
+  "sex": "MALE"
+}
+
+

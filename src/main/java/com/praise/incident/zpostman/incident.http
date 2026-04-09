@@ -1,0 +1,96 @@
+@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtaWNoZWFsLm9rYWZvckB2ZHRjb21tcy5jb20iLCJpYXQiOjE3NzUzNDY0ODUsImV4cCI6MTc3NzkzODQ4NX0.c9Me0JY6boqD9s5VrbXTlRdPnHOLrmTo5KeSXhQ_NnG6anhktIfxxqZQlF8vVkx1VEddAtWGmDWQigjZpu8RTA
+
+### 📌 Create Incident (with Image Upload)
+POST http://localhost:8080/api/incident/create
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="data"
+Content-Type: application/json
+
+{
+  "title": "Broken Pipe",
+  "description": "Water leaking from pipe",
+  "priority": "HIGH",
+  "location": "Lagos",
+  "resolvingDepartment": "Physical Planning and Development Unit"
+}
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="image.jpg"
+Content-Type: image/jpeg
+
+< ./image.jpg
+--WebAppBoundary--
+
+###
+
+### 📌 Get My Incidents
+GET http://localhost:8080/api/incident/my-incidents
+Authorization: Bearer {{token}}
+
+### Variables
+@baseUrl = http://localhost:8080/api/incident
+@userEmail = praise@example.com
+@incidentNumber = IND-001
+
+
+####################################################################################
+### 1. Create a New Incident
+# Note: The 'data' part contains the IncidentDto JSON
+# The 'file' part contains the image
+POST {{baseUrl}}/create?email={{userEmail}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="data"
+Content-Type: application/json
+
+{
+  "title": "Server Downtime",
+  "description": "The production server is unresponsive since 10 AM.",
+  "priority": "HIGH",
+  "location": "Data Center 1",
+  "resolvingDepartment": "IT Infrastructure"
+}
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="test-image.jpg"
+Content-Type: image/jpeg
+
+< ./test-image.jpg
+--boundary--
+
+### 2. Get All Incidents for a User
+GET {{baseUrl}}/user?email={{userEmail}}
+Accept: application/json
+
+### 3. Update an Incident
+# Here we update the status and upload a new image
+PUT {{baseUrl}}/{{incidentNumber}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="data"
+Content-Type: application/json
+
+{
+  "status": "OPEN",
+  "description": "Update: Engineer is looking into the power supply."
+}
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="update-image.jpg"
+Content-Type: image/jpeg
+
+< ./image.jpg
+--boundary--
+
+### 4. Delete an Incident
+DELETE {{baseUrl}}/{{incidentNumber}}
+
+### 4. All Incident
+GET http://localhost:8080/api/incident/all
+
+
