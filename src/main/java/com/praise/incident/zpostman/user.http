@@ -18,5 +18,12 @@ Content-Type: application/json
   "phoneNumber": "9074830750",
   "password": "password",
   "sex": "MALE",
-  "role": "STUDENT"
+  "role": "USER",
+  "active": true
 }
+
+### ALL Users Account
+GET http://localhost:8080/api/users/all
+
+### Delete a User by ID
+DELETE http://localhost:8080/api/users/delete/302

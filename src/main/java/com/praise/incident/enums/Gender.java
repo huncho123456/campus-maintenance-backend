@@ -1,6 +1,6 @@
 package com.praise.incident.enums;
 
-public enum SEX {
+public enum Gender {
     MALE,
     FEMALE,
     OTHER

@@ -1,24 +1,25 @@
 package com.praise.incident.entity;
 
-import com.praise.incident.enums.SEX;
+import com.praise.incident.enums.Gender;
 import com.praise.incident.enums.UserRole;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class UserEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "firstname", nullable = false)
@@ -37,13 +38,31 @@ public class UserEntity {
     private String password;
 
     @Column(name = "sex")
-    private SEX sex;
+    private Gender gender;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private UserRole role;
 
-    @Column(name = "active", nullable = false)
-    private boolean active;
+    @Column(name = "active")
+    private boolean active ;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
 
 }

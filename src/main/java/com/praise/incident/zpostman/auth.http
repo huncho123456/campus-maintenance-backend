@@ -5,8 +5,9 @@ POST http://localhost:8080/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@gmail.com",
-  "password": "password"
+  "email": "micheal.okafor.79677@gmail.com",
+  "password": "password",
+  "active": true
 }
 
 
@@ -21,7 +22,8 @@ Content-Type: application/json
   "password": "password",
   "phoneNumber": "08099988877",
   "role": "ADMIN",
-  "sex": "MALE"
+  "sex": "MALE",
+  "active": true
 }
 
 

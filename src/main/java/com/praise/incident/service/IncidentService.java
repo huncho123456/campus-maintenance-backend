@@ -4,16 +4,18 @@ import com.praise.incident.dto.IncidentDto;
 import com.praise.incident.dto.IncidentResponse;
 import com.praise.incident.entity.IncidentEntity;
 import com.praise.incident.entity.UserEntity;
-import com.praise.incident.enums.Priority;
+import com.praise.incident.enums.Department;
 import com.praise.incident.enums.Status;
 import com.praise.incident.exception.NotFoundException;
+import com.praise.incident.notification.NotificationDto;
+import com.praise.incident.notification.NotificationService;
 import com.praise.incident.repo.IncidentRepo;
 import com.praise.incident.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +28,8 @@ public class IncidentService {
     private final IncidentRepo incidentRepository;
     private final UserRepo userRepository;
     private final CloudinaryService cloudinaryService;
+    private final AiService aiService;
+    private final NotificationService notificationService;
 
     public IncidentResponse createIncident(IncidentDto request, MultipartFile file, String email) {
 
@@ -39,9 +43,19 @@ public class IncidentService {
                 UUID.randomUUID().toString().substring(0, 4).toUpperCase());
 
         String imageUrl = null;
-
         if (file != null && !file.isEmpty()) {
             imageUrl = cloudinaryService.uploadFile(file);
+        }
+
+        // Step 2: Resolve department from image OR fall back to request value
+        Department resolvingDepartment = request.getResolvingDepartment();
+        if (imageUrl != null) {
+            try {
+                resolvingDepartment = aiService.resolveDepartment(imageUrl, request.getDescription());
+                log.info("AI resolved department: {}", resolvingDepartment);
+            } catch (Exception e) {
+                log.warn("AI department resolution failed, falling back to request value. Reason: {}", e.getMessage());
+            }
         }
 
         IncidentEntity incident = IncidentEntity.builder()
@@ -52,12 +66,15 @@ public class IncidentService {
                 .priority(request.getPriority())
                 .reportedByEmail(user.getEmail())
                 .location(request.getLocation())
-                .imageUrl(imageUrl)
-                .resolvingDepartment(request.getResolvingDepartment())
+                .imageUrl((imageUrl))
+                .resolvingDepartment(resolvingDepartment)
                 .status(Status.OPEN)
                 .build();
 
         IncidentEntity saved = incidentRepository.save(incident);
+        NotificationDto notificationDto = NotificationDto.fromEntity(saved);
+//        System.out.println(notificationDto);
+        notificationService.sendIncidentNotifications(notificationDto);
 
         return IncidentResponse.builder()
                 .statusCode(201)
@@ -109,22 +126,59 @@ public class IncidentService {
         IncidentEntity incident = incidentRepository.findByIncidentNumber(incidentNumber)
                 .orElseThrow(() -> new NotFoundException("Incident not found with number: " + incidentNumber));
 
-        // Update basic fields if they are provided in the request
-        if (request.getTitle() != null) incident.setTitle(request.getTitle());
+        // Update basic fields if provided
+        if (request.getTitle() != null)       incident.setTitle(request.getTitle());
         if (request.getDescription() != null) incident.setDescription(request.getDescription());
-        if (request.getPriority() != null) incident.setPriority(request.getPriority());
-        if (request.getLocation() != null) incident.setLocation(request.getLocation());
-        if (request.getResolvingDepartment() != null) incident.setResolvingDepartment(request.getResolvingDepartment());
-        if (request.getStatus() != null) incident.setStatus(request.getStatus());
+        if (request.getPriority() != null)    incident.setPriority(request.getPriority());
+        if (request.getLocation() != null)    incident.setLocation(request.getLocation());
+        if (request.getStatus() != null)      incident.setStatus(request.getStatus());
 
-        // Handle new image upload
-        if (file != null && !file.isEmpty()) {
-            String newImageUrl = cloudinaryService.uploadFile(file);
-            incident.setImageUrl(newImageUrl);
-        }
+//        boolean newImageUploaded   = file != null && !file.isEmpty();
+//        boolean descriptionChanged = request.getDescription() != null;
+//
+//        if (newImageUploaded || descriptionChanged) {
+//            // Use existing URL as fallback
+//            String imageUrl = incident.getImageUrl();
+//            if (newImageUploaded) {
+//                imageUrl = cloudinaryService.uploadFile(file);
+//                incident.setImageUrl(imageUrl);
+//            }
+//
+//            // Use updated description if provided, otherwise keep existing
+//            String description = descriptionChanged
+//                    ? request.getDescription()
+//                    : incident.getDescription();
+//
+//            if (imageUrl != null) {
+//                try {
+//                    Department aiDepartment = aiService.resolveDepartment(imageUrl, description);
+//                    incident.setResolvingDepartment(aiDepartment);
+//                    log.info("AI re-classified incident {} → {}", incidentNumber, aiDepartment);
+//                } catch (Exception e) {
+//                    log.warn("AI re-classification failed for {}, keeping existing department. Reason: {}",
+//                            incidentNumber, e.getMessage());
+//                }
+//            }
+//
+//        } else if (request.getResolvingDepartment() != null) {
+//            // No new image or description — honour manual override from request
+//            incident.setResolvingDepartment(request.getResolvingDepartment());
+//            log.info("Department manually overridden to {} for incident {}",
+//                    request.getResolvingDepartment(), incidentNumber);
+//        }
 
         IncidentEntity updated = incidentRepository.save(incident);
-        return mapToResponse(updated, 200, "Incident updated successfully");
+
+        // Only notify reporter when status was explicitly changed
+        if (request.getStatus() != null) {
+            NotificationDto notificationDto = NotificationDto.fromEntity(updated);
+            notificationService.sendStatusUpdateNotification(notificationDto);
+            log.info("Status update notification sent for incident {}", incidentNumber);
+        }
+
+        return mapToResponse(updated,
+                200,
+                "Incident updated successfully");
     }
 
     public void deleteIncident(String incidentNumber) {

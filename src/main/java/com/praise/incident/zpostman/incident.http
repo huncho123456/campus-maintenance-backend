@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtaWNoZWFsLm9rYWZvckB2ZHRjb21tcy5jb20iLCJpYXQiOjE3NzUzNDY0ODUsImV4cCI6MTc3NzkzODQ4NX0.c9Me0JY6boqD9s5VrbXTlRdPnHOLrmTo5KeSXhQ_NnG6anhktIfxxqZQlF8vVkx1VEddAtWGmDWQigjZpu8RTA
+@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtaWNoZWFsLm9rYWZvci43OTY3N0BnbWFpbC5jb20iLCJpYXQiOjE3NzYzMzYwMjMsImV4cCI6MTc3ODkyODAyM30.kmPLU3EaLRjQuaho8_Y9ZyTGe4WV6gzDUPhAxtZJUfLLRObW5Bx8i1obNiRkCx0C8rAZblHoQ5cU1xMTy-1qPQ
 
 ### 📌 Create Incident (with Image Upload)
 POST http://localhost:8080/api/incident/create
@@ -14,7 +14,7 @@ Content-Type: application/json
   "description": "Water leaking from pipe",
   "priority": "HIGH",
   "location": "Lagos",
-  "resolvingDepartment": "Physical Planning and Development Unit"
+  "imageUrl": "https://res.cloudinary.com/dsv9xgeq3/image/upload/v1776335668/images_muoqsw.jpg"
 }
 
 --WebAppBoundary
@@ -92,5 +92,14 @@ DELETE {{baseUrl}}/{{incidentNumber}}
 
 ### 4. All Incident
 GET http://localhost:8080/api/incident/all
+
+### 5. FastApi
+POST http://localhost:8000/caption
+Content-Type: application/json
+
+{
+   "image_url": "https://res.cloudinary.com/dsv9xgeq3/image/upload/v1775764991/profile_pics/iwl4cvtiaic1zqukipbk.jpg",
+   "prompt": ""
+}
 
 

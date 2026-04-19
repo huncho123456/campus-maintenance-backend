@@ -23,4 +23,5 @@ public enum Department {
 
     @JsonProperty("Grounds and Drainage Maintenance Unit")
     GROUNDS_AND_DRAINAGE
+
 }

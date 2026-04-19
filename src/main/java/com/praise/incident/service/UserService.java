@@ -15,6 +15,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -43,7 +46,7 @@ public class UserService {
                 .phoneNumber(registrationRequest.getPhoneNumber())
                 .role(role)
                 .active(true)
-                .sex(registrationRequest.getSex())
+                .gender(registrationRequest.getGender())
                 .build();
 
         UserEntity savedUser = userRepository.save(userToSave);
@@ -123,7 +126,7 @@ public class UserService {
         if (userDTO.getLastName() != null) existingUser.setLastName(userDTO.getLastName());
         if (userDTO.getPhoneNumber() != null) existingUser.setPhoneNumber(userDTO.getPhoneNumber());
         if (userDTO.getRole() != null) existingUser.setRole(userDTO.getRole());
-        if (userDTO.getSex() != null) existingUser.setSex(userDTO.getSex());
+        if (userDTO.getGender() != null) existingUser.setGender(userDTO.getGender());
 
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
@@ -138,4 +141,33 @@ public class UserService {
 
     }
 
+    public Response getAllUsers() {
+        log.info("Inside getAllUsers()");
+
+        List<UserEntity> users = userRepository.findAll();
+
+        List<UserDto> userDTOs = users.stream()
+                .map(user -> modelMapper.map(user, UserDto.class))
+                .collect(Collectors.toList());
+
+        return Response.builder()
+                .status(200)
+                .message("success")
+                .users(userDTOs)
+                .build();
+    }
+
+    public Response deleteUser(Long id) {
+        log.info("Inside deleteUser() for ID: {}", id);
+
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User with ID " + id + " not found"));
+
+        userRepository.delete(user);
+
+        return Response.builder()
+                .status(200)
+                .message("User deleted successfully")
+                .build();
+    }
 }
